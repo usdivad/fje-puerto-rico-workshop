@@ -19,8 +19,12 @@ var currMarker = "x";
 var numSynthVoices = 4;
 var synthX = new Tone.PolySynth(numSynthVoices, function() {return new Tone.Synth({"oscillator": {"type": "triangle"}});}).toMaster();
 var synthO = new Tone.PolySynth(numSynthVoices, function() {return new Tone.Synth({"oscillator": {"type": "fmtriangle"}});}).toMaster();
+var synthBGM = new Tone.PolySynth(numSynthVoices, function() {return new Tone.Synth({"oscillator": {"type": "fattriangle"}});}).toMaster();
+var hasBGMStarted = false;
+var currNumMoves = 0;
+var maxNumMoves = 8;
 
-var availableNotes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"];
+
 
 // Processing functions
 function setup() {
@@ -91,7 +95,12 @@ function placeMarker(x, y) {
 	if (!isBoardPositionOccupied(i)) {
 		board[i] = currMarker; // Place
 		playMarkerPlacementSound(currMarker, i);
+		startBGM();
 		currMarker = currMarker == "x" ? "o" : "x"; // Switch marker
+		currNumMoves++;
+		if (currNumMoves > maxNumMoves) {
+			stopBGM();
+		}
 	}
 }
 
@@ -125,25 +134,33 @@ function isBoardPositionOccupied(i) {
 }
 
 function playMarkerPlacementSound(marker, i) {
-	var notes = availableNotes;
-	var note1 = chooseRandomFromArray(notes);
-	note1 = "C4";
-	notes = notes.filter(function(v, i, a) {return v != note1;});
-	var note2 = chooseRandomFromArray(notes);
-	notes = notes.filter(function(v, i, a) {return v != note2;});
-	var note3 = chooseRandomFromArray(notes);
-
-	console.log(note1 + ", " + note2 + ", " + note3);
-
 	if (currMarker == "x") {
-		synthX.triggerAttackRelease([note1, note2, note3], "8n");
+		synthX.triggerAttackRelease(["C4", "E4"], "8n");
 	}
 	else if (currMarker == "o") {
-		synthO.triggerAttackRelease([note1, note2, note3], "8n");
+		synthX.triggerAttackRelease(["E4", "G4"], "8n");
 	}
 }
 
-function chooseRandomFromArray(arr) {
-	var i = Math.floor(Math.random() * arr.length);
-	return arr[i];
+function startBGM() {
+	if (hasBGMStarted) return;
+
+	Tone.Transport.start();
+	Tone.Transport.scheduleRepeat(function(t) {
+		// console.log("asdf");
+		if (currMarker == "x") {
+			synthBGM.triggerAttackRelease(["C3", "F3"], "16n");
+		}
+		else if (currMarker == "o") {
+			synthBGM.triggerAttackRelease(["C3", "G3"], "16n");
+		}
+	}, "8n");
+
+	hasBGMStarted = true;
 }
+
+function stopBGM() {
+	synthBGM.triggerAttackRelease(["C3", "G3", "C4"], "8n");
+	Tone.Transport.stop();
+}
+
