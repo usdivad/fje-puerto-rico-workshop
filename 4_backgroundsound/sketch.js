@@ -24,6 +24,9 @@ var hasBGMStarted = false;
 var currNumMoves = 0;
 var maxNumMoves = 8;
 
+var currMarkerThickness = 0;
+var maxMarkerThickness = 10;
+
 var currGridThickness = 0;
 var maxGridThickness = 10;
 
@@ -54,10 +57,11 @@ function draw() {
 
 	// Existing bits
 	noFill();
-	strokeWeight(6);
+	strokeWeight(6 + currMarkerThickness);
 	for (var i=0; i<board.length; i++) {
 		drawBoardCell(i, board[i]);
 	}
+	currMarkerThickness = Math.max(0, currMarkerThickness - 1);
 
 	// Mouse hover
 	strokeWeight(1);
@@ -100,6 +104,7 @@ function placeMarker(x, y) {
 		board[i] = currMarker; // Place
 		playMarkerPlacementSound(currMarker, i);
 		startBGM();
+		currMarkerThickness = maxMarkerThickness;
 		currMarker = currMarker == "x" ? "o" : "x"; // Switch marker
 		currNumMoves++;
 		if (currNumMoves > maxNumMoves) {

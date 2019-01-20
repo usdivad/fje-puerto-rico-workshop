@@ -20,6 +20,9 @@ var numSynthVoices = 4;
 var synthX = new Tone.PolySynth(numSynthVoices, function() {return new Tone.Synth({"oscillator": {"type": "triangle"}});}).toMaster();
 var synthO = new Tone.PolySynth(numSynthVoices, function() {return new Tone.Synth({"oscillator": {"type": "fmtriangle"}});}).toMaster();
 
+var currMarkerThickness = 0;
+var maxMarkerThickness = 10;
+
 // Processing functions
 function setup() {
 	cnv = createCanvas(windowWidth, windowHeight);
@@ -44,10 +47,11 @@ function draw() {
 
 	// Existing bits
 	noFill();
-	strokeWeight(6);
+	strokeWeight(6 + currMarkerThickness);
 	for (var i=0; i<board.length; i++) {
 		drawBoardCell(i, board[i]);
 	}
+	currMarkerThickness = Math.max(0, currMarkerThickness - 1);
 
 	// Mouse hover
 	strokeWeight(1);
@@ -89,6 +93,7 @@ function placeMarker(x, y) {
 	if (!isBoardPositionOccupied(i)) {
 		board[i] = currMarker; // Place
 		playMarkerPlacementSound(currMarker, i);
+		currMarkerThickness = maxMarkerThickness;
 		currMarker = currMarker == "x" ? "o" : "x"; // Switch marker
 	}
 }

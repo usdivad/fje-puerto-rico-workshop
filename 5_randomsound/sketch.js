@@ -1,5 +1,9 @@
 // Visual params
 var cnv;
+
+var currMarkerThickness = 0;
+var maxMarkerThickness = 10;
+
 var currGridThickness = 0;
 var maxGridThickness = 10;
 
@@ -14,6 +18,7 @@ var board = [
 // 	" ", "o", " ",
 // 	" ", " ", "x"
 // ];
+
 var currMarker = "x";
 var currNumMoves = 0;
 var maxNumMoves = 8;
@@ -26,7 +31,6 @@ var synthX = new Tone.PolySynth(numSynthVoices, function() {return new Tone.Synt
 var synthO = new Tone.PolySynth(numSynthVoices, function() {return new Tone.Synth({"oscillator": {"type": "fmtriangle"}});}).toMaster();
 var synthBGM = new Tone.PolySynth(numSynthVoices, function() {return new Tone.Synth({"oscillator": {"type": "fattriangle"}});}).toMaster();
 var hasBGMStarted = false;
-
 
 var availableNotes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4",
 					  "C5", "D5", "E5", "F5", "G5", "A5", "B5"];
@@ -59,10 +63,11 @@ function draw() {
 
 	// Existing bits
 	noFill();
-	strokeWeight(6);
+	strokeWeight(6 + currMarkerThickness);
 	for (var i=0; i<board.length; i++) {
 		drawBoardCell(i, board[i]);
 	}
+	currMarkerThickness = Math.max(0, currMarkerThickness - 1);
 
 	// Mouse hover
 	strokeWeight(1);
@@ -107,6 +112,7 @@ function placeMarker(x, y) {
 		board[i] = currMarker; // Place marker in data
 		playMarkerPlacementSound(currMarker, i); // Play music
 		startBGM(); // Start BGM if not started already
+		currMarkerThickness = maxMarkerThickness; // Reset marker thickness for animation
 		currMarker = currMarker == "x" ? "o" : "x"; // Switch marker
 		currNumMoves++; // Increment num moves
 		if (currNumMoves > maxNumMoves) {
