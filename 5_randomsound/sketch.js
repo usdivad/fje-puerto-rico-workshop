@@ -1,5 +1,6 @@
 var cnv;
 
+// Game board
 var board = [
 	" ", " ", " ",
 	" ", " ", " ",
@@ -24,6 +25,9 @@ var hasBGMStarted = false;
 var currNumMoves = 0;
 var maxNumMoves = 8;
 
+var currGridThickness = 0;
+var maxGridThickness = 10;
+
 var availableNotes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4",
 					  "C5", "D5", "E5", "F5", "G5", "A5", "B5"];
 var currBGMNotes = ["C3", "G3"];
@@ -41,12 +45,14 @@ function draw() {
 	background("#000");
 
 	// Grid
-	strokeWeight(2);
+	strokeWeight(currGridThickness + 2);
 	stroke("#faf");
 	line(0, height/3, width, height/3);
 	line(0, height*2/3, width, height*2/3);
 	line(width/3, 0, width/3, height);
 	line(width*2/3, 0, width*2/3, height);
+
+	currGridThickness = Math.max(0, currGridThickness - 1);
 
 	// ellipse(50, 50, 80, 80);
 
@@ -171,7 +177,8 @@ function startBGM() {
 
 	Tone.Transport.start();
 	Tone.Transport.scheduleRepeat(function(t) {
-		// console.log("asdf");
+
+		// BGM
 		var note1 = currBGMNotes[0];
 		var note2 = chooseRandomFromArray(currBGMNotes.slice(1,4));
 
@@ -181,6 +188,10 @@ function startBGM() {
 		else if (currMarker == "o") {
 			synthBGM.triggerAttackRelease([note1, note2], "16n");
 		}
+
+		// Grid animation
+		currGridThickness = maxGridThickness;
+
 	}, "8n");
 
 	hasBGMStarted = true;

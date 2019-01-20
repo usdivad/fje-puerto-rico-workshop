@@ -24,12 +24,13 @@ var hasBGMStarted = false;
 var currNumMoves = 0;
 var maxNumMoves = 8;
 
-
+var currGridThickness = 0;
+var maxGridThickness = 10;
 
 // Processing functions
 function setup() {
 	cnv = createCanvas(windowWidth, windowHeight);
-	background("#000");
+	// background("#000");
 	// cnv.position( (windowWidth - width) / 2, (windowHeight - height) / 2);
 	// console.log(cnv);
 }
@@ -37,14 +38,17 @@ function setup() {
 function draw() {
 	// Background
 	background("#000");
+	// background("#" + currBackgroundBrightness + currBackgroundBrightness + currBackgroundBrightness);	
 
 	// Grid
-	strokeWeight(2);
+	strokeWeight(currGridThickness + 2);
 	stroke("#faf");
 	line(0, height/3, width, height/3);
 	line(0, height*2/3, width, height*2/3);
 	line(width/3, 0, width/3, height);
 	line(width*2/3, 0, width*2/3, height);
+
+	currGridThickness = Math.max(0, currGridThickness - 1);
 
 	// ellipse(50, 50, 80, 80);
 
@@ -147,13 +151,17 @@ function startBGM() {
 
 	Tone.Transport.start();
 	Tone.Transport.scheduleRepeat(function(t) {
-		// console.log("asdf");
+		// BGM
 		if (currMarker == "x") {
 			synthBGM.triggerAttackRelease(["C3", "F3"], "16n");
 		}
 		else if (currMarker == "o") {
 			synthBGM.triggerAttackRelease(["C3", "G3"], "16n");
 		}
+
+		// Grid animation
+		currGridThickness = maxGridThickness;
+
 	}, "8n");
 
 	hasBGMStarted = true;
