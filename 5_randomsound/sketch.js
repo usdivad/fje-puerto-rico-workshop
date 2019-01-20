@@ -1,6 +1,9 @@
+// Visual params
 var cnv;
+var currGridThickness = 0;
+var maxGridThickness = 10;
 
-// Game board
+// Game params
 var board = [
 	" ", " ", " ",
 	" ", " ", " ",
@@ -11,26 +14,24 @@ var board = [
 // 	" ", "o", " ",
 // 	" ", " ", "x"
 // ];
-
 var currMarker = "x";
+var currNumMoves = 0;
+var maxNumMoves = 8;
 
+// Synth params
 // var voiceX = new Tone.Synth({"oscillator": {"type": "triangle"}});
 // var voiceO = new Tone.Synth({"oscillator": {"type": "fmtriangle"}});
-
 var numSynthVoices = 4;
 var synthX = new Tone.PolySynth(numSynthVoices, function() {return new Tone.Synth({"oscillator": {"type": "triangle"}});}).toMaster();
 var synthO = new Tone.PolySynth(numSynthVoices, function() {return new Tone.Synth({"oscillator": {"type": "fmtriangle"}});}).toMaster();
 var synthBGM = new Tone.PolySynth(numSynthVoices, function() {return new Tone.Synth({"oscillator": {"type": "fattriangle"}});}).toMaster();
 var hasBGMStarted = false;
-var currNumMoves = 0;
-var maxNumMoves = 8;
 
-var currGridThickness = 0;
-var maxGridThickness = 10;
 
 var availableNotes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4",
 					  "C5", "D5", "E5", "F5", "G5", "A5", "B5"];
 var currBGMNotes = ["C3", "G3"];
+
 
 // Processing functions
 function setup() {
@@ -79,10 +80,12 @@ function windowResized() {
 
 // Custom functions
 function drawBoardCell(i, marker) {
+	// Setup position and size
 	var markerSize = Math.min(width, height);
 	var posX = ((i%3) * width/3) + (width/6); // Cell, then center of cell
 	var posY = (Math.floor(i/3) * height/3) + (height/6);
 
+	// Draw
 	if (marker == "x") {
 		stroke("#0fa");
 
@@ -101,24 +104,27 @@ function placeMarker(x, y) {
 	var i = getBoardPositionFromCoordinates(x, y);
 
 	if (!isBoardPositionOccupied(i)) {
-		board[i] = currMarker; // Place
-		playMarkerPlacementSound(currMarker, i);
-		startBGM();
+		board[i] = currMarker; // Place marker in data
+		playMarkerPlacementSound(currMarker, i); // Play music
+		startBGM(); // Start BGM if not started already
 		currMarker = currMarker == "x" ? "o" : "x"; // Switch marker
-		currNumMoves++;
+		currNumMoves++; // Increment num moves
 		if (currNumMoves > maxNumMoves) {
-			stopBGM();
+			stopBGM(); // Stop BGM if game is done
 		}
 	}
 }
 
 function drawMarkerHover() {
+	// Skip occupied spaces
 	if (isBoardPositionOccupied(getBoardPositionFromCoordinates(mouseX, mouseY))) {
 		return;
 	}
 
+	// Setup
 	var markerSize = Math.min(width, height);
 
+	// Draw
 	if (currMarker == "x") {
 		stroke("#0fa");
 
@@ -142,6 +148,7 @@ function isBoardPositionOccupied(i) {
 }
 
 function playMarkerPlacementSound(marker, i) {
+	// Setup notes
 	var notes = availableNotes;
 	var note1 = chooseRandomFromArray(notes);
 	note1 = "C4";
@@ -152,6 +159,7 @@ function playMarkerPlacementSound(marker, i) {
 	notes = notes.filter(function(v, i, a) {return v != note2;});
 	var note4 = chooseRandomFromArray(notes);
 
+	// Add to BGM
 	console.log(note1 + ", " + note2 + ", " + note3 + ", " + note4);
 	currBGMNotes = [note1.replace("4", "3").replace("5", "4"),
 					note2.replace("4", "3").replace("5", "4"),
@@ -159,6 +167,7 @@ function playMarkerPlacementSound(marker, i) {
 					note4.replace("4", "3").replace("5", "4")
 					];
 
+    // Play
 	if (currMarker == "x") {
 		synthX.triggerAttackRelease([note1, note2, note3, note4], "8n");
 	}
@@ -198,8 +207,11 @@ function startBGM() {
 }
 
 function stopBGM() {
+	// Play ending chord
 	synthBGM.triggerAttackRelease(["C3", "E3", "G3", "C4", "G4", "C5"], "8n");
 	synthX.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n");
+	
+	// Stop transport
 	Tone.Transport.stop();
 }
 
