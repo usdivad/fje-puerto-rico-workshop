@@ -162,7 +162,7 @@ function playMarkerPlacementSound(marker, i) {
 	var note2 = chooseRandomFromArray(notes);
 	notes = notes.filter(function(v, i, a) {return v != note2;});
 	var note3 = chooseRandomFromArray(notes);
-	notes = notes.filter(function(v, i, a) {return v != note2;});
+	notes = notes.filter(function(v, i, a) {return v != note3;});
 	var note4 = chooseRandomFromArray(notes);
 
 	// Add to BGM
