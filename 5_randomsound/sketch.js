@@ -24,7 +24,8 @@ var hasBGMStarted = false;
 var currNumMoves = 0;
 var maxNumMoves = 8;
 
-var availableNotes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4"];
+var availableNotes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4",
+					  "C5", "D5", "E5", "F5", "G5", "A5", "B5"];
 var currBGMNotes = ["C3", "G3"];
 
 // Processing functions
@@ -142,15 +143,21 @@ function playMarkerPlacementSound(marker, i) {
 	var note2 = chooseRandomFromArray(notes);
 	notes = notes.filter(function(v, i, a) {return v != note2;});
 	var note3 = chooseRandomFromArray(notes);
+	notes = notes.filter(function(v, i, a) {return v != note2;});
+	var note4 = chooseRandomFromArray(notes);
 
-	console.log(note1 + ", " + note2 + ", " + note3);
-	currBGMNotes = [note1.replace("4", "3"), note2.replace("4", "3"), note3.replace("4", "3")];
+	console.log(note1 + ", " + note2 + ", " + note3 + ", " + note4);
+	currBGMNotes = [note1.replace("4", "3").replace("5", "4"),
+					note2.replace("4", "3").replace("5", "4"),
+					note3.replace("4", "3").replace("5", "4"),
+					note4.replace("4", "3").replace("5", "4")
+					];
 
 	if (currMarker == "x") {
-		synthX.triggerAttackRelease([note1, note2, note3], "8n");
+		synthX.triggerAttackRelease([note1, note2, note3, note4], "8n");
 	}
 	else if (currMarker == "o") {
-		synthO.triggerAttackRelease([note1, note2, note3], "8n");
+		synthO.triggerAttackRelease([note1, note2, note3, note4], "8n");
 	}
 }
 
@@ -165,11 +172,14 @@ function startBGM() {
 	Tone.Transport.start();
 	Tone.Transport.scheduleRepeat(function(t) {
 		// console.log("asdf");
+		var note1 = currBGMNotes[0];
+		var note2 = chooseRandomFromArray(currBGMNotes.slice(1,4));
+
 		if (currMarker == "x") {
-			synthBGM.triggerAttackRelease(currBGMNotes, "16n");
+			synthBGM.triggerAttackRelease([note1, note2], "16n");
 		}
 		else if (currMarker == "o") {
-			synthBGM.triggerAttackRelease(currBGMNotes, "16n");
+			synthBGM.triggerAttackRelease([note1, note2], "16n");
 		}
 	}, "8n");
 
@@ -177,7 +187,8 @@ function startBGM() {
 }
 
 function stopBGM() {
-	synthBGM.triggerAttackRelease(["C3", "G3", "C4"], "8n");
+	synthBGM.triggerAttackRelease(["C3", "E3", "G3", "C4", "G4", "C5"], "8n");
+	synthX.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n");
 	Tone.Transport.stop();
 }
 
