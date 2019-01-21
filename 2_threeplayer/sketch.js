@@ -14,6 +14,8 @@ var board = [
 
 var currMarker = "x";
 
+var winner = {"positions": [], "marker": " "};
+
 // Processing functions
 function setup() {
 	cnv = createCanvas(windowWidth, windowHeight);
@@ -44,12 +46,17 @@ function draw() {
 	}
 
 	// Mouse hover
-	strokeWeight(1);
-	drawMarkerHover();
+	if (!isGameOver()) {
+		strokeWeight(1);
+		drawMarkerHover();
+	}
 }
 
 function mousePressed() {
-	placeMarker(mouseX, mouseY);
+	if (!isGameOver()) {
+		placeMarker(mouseX, mouseY);
+		winner = determineWinner();
+	}
 }
 
 function windowResized() {
@@ -64,6 +71,17 @@ function drawBoardCell(i, marker) {
 	var posY = (Math.floor(i/4) * height/4) + (height/8);
 
 	if (marker == "x") {
+		// Winning markers
+		if (marker == winner["marker"] && winner["positions"].indexOf(i) >= 0) {
+			strokeWeight(24);
+			stroke("#0a9");
+
+			line(posX - markerSize/16, posY - markerSize/16, posX + markerSize/16, posY + markerSize/16);
+			line(posX + markerSize/16, posY - markerSize/16, posX - markerSize/16, posY + markerSize/16);
+		}
+
+
+		strokeWeight(6);
 		stroke("#0fa");
 
 		// Diagonal lines
@@ -71,10 +89,30 @@ function drawBoardCell(i, marker) {
 		line(posX + markerSize/16, posY - markerSize/16, posX - markerSize/16, posY + markerSize/16);
 	}
 	else if (marker == "o") {
+		// Winning markers
+		if (marker == winner["marker"] && winner["positions"].indexOf(i) >= 0) {
+			strokeWeight(24);
+			stroke("#09a");
+
+			ellipse(posX, posY, markerSize/8, markerSize/8);
+		}
+
+		strokeWeight(6);
 		stroke("#0af");
 		ellipse(posX, posY, markerSize/8, markerSize/8);
 	}
 	else if (marker == "h") {
+		// Winning markers
+		if (marker == winner["marker"] && winner["positions"].indexOf(i) >= 0) {
+			strokeWeight(24);
+			stroke("#a90");
+
+			line(posX, posY - markerSize/16, posX - markerSize/16, posY + markerSize/16); // /
+			line(posX, posY - markerSize/16, posX + markerSize/16, posY + markerSize/16); // \
+			line(posX - markerSize/16, posY + markerSize/16, posX + markerSize/16, posY + markerSize/16); // _
+		}
+
+		strokeWeight(6);
 		stroke("#fa0");
 
 		// H
@@ -138,4 +176,64 @@ function getBoardPositionFromCoordinates(x, y) {
 
 function isBoardPositionOccupied(i) {
 	return board[i] != " ";
+}
+
+// Determine winner of the game
+function determineWinner() {
+	// var isGameOver = false;
+	var winningPositions = [];
+	var winningMarker = " ";
+
+	// Set up position indices and steps
+	var horizontalPositions = [0,1,4,5,8,9,12,13];
+	var horizontalStep = 1;
+
+	var verticalPositions = [0,1,2,3,4,5,6,7];
+	var verticalStep = 4;
+
+	var diagonalTopLeftPositions = [0,5, 1, 4];
+	var diagonalTopLeftStep = 5;
+
+	var diagonalTopRightPositions = [2, 3,6, 7];
+	var diagonalTopRightStep = 3;
+
+	// Composite horizontal, vertical, diagonal
+	var dataToCheck = [
+		{"positions": horizontalPositions, "step": horizontalStep},
+		{"positions": verticalPositions, "step": verticalStep},
+		{"positions": diagonalTopLeftPositions, "step": diagonalTopLeftStep},
+		{"positions": diagonalTopRightPositions, "step": diagonalTopRightStep},
+	];
+
+	// Check all possible winning combos
+	for (var positionStepPairIndex=0; positionStepPairIndex < dataToCheck.length; positionStepPairIndex++) {
+		var positions = dataToCheck[positionStepPairIndex]["positions"];
+		var step = dataToCheck[positionStepPairIndex]["step"];
+
+		// Each starting position for h, v, d
+		for (var startingPositionIndex=0; startingPositionIndex < positions.length; startingPositionIndex++) {
+			var startingPosition = positions[startingPositionIndex];
+			if (board[startingPosition] == board[startingPosition + step] &&
+				board[startingPosition] == board[startingPosition + (step*2)] &&
+				board[startingPosition] != " ") {
+				winningPositions = [startingPosition,
+									startingPosition + step,
+									startingPosition + (step*2)];
+				winningMarker = board[startingPosition];
+				console.log("We have a winner!");
+			}
+		}
+	}
+
+	console.log("winningPositions:");
+	console.log(winningPositions);
+	console.log("winningMarker = " + winningMarker);
+
+	return {"positions": winningPositions, "marker": winningMarker};
+}
+
+// Checks if game is over
+function isGameOver() {
+	// console.log(winner);
+	return winner["marker"] != " ";
 }
