@@ -65,7 +65,8 @@ function draw() {
 function mousePressed() {
 	if (!isGameOver()) {
 		placeMarker(mouseX, mouseY);
-	}}
+	}
+}
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
