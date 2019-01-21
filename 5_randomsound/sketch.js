@@ -23,6 +23,9 @@ var currMarker = "x";
 var currNumMoves = 0;
 var maxNumMoves = 8;
 
+var winner = {"positions": [], "marker": " "};
+
+
 // Synth params
 // var voiceX = new Tone.Synth({"oscillator": {"type": "triangle"}});
 // var voiceO = new Tone.Synth({"oscillator": {"type": "fmtriangle"}});
@@ -70,12 +73,16 @@ function draw() {
 	currMarkerThickness = Math.max(0, currMarkerThickness - 1);
 
 	// Mouse hover
-	strokeWeight(1);
-	drawMarkerHover();
+	if (!isGameOver()) {
+		strokeWeight(1);
+		drawMarkerHover();
+	}
 }
 
 function mousePressed() {
-	placeMarker(mouseX, mouseY);
+	if (!isGameOver()) {
+		placeMarker(mouseX, mouseY);
+	}
 }
 
 function windowResized() {
@@ -92,6 +99,17 @@ function drawBoardCell(i, marker) {
 
 	// Draw
 	if (marker == "x") {
+		// Winning markers
+		if (marker == winner["marker"] && winner["positions"].indexOf(i) >= 0) {
+			strokeWeight(24);
+			stroke("#0a9");
+
+			line(posX - markerSize/16, posY - markerSize/16, posX + markerSize/16, posY + markerSize/16);
+			line(posX + markerSize/16, posY - markerSize/16, posX - markerSize/16, posY + markerSize/16);
+		}
+
+		// Reset for regular markers
+		strokeWeight(6);
 		stroke("#0fa");
 
 		// Diagonal lines
@@ -99,6 +117,16 @@ function drawBoardCell(i, marker) {
 		line(posX + markerSize/16, posY - markerSize/16, posX - markerSize/16, posY + markerSize/16);
 	}
 	else if (marker == "o") {
+		// Winning markers
+		if (marker == winner["marker"] && winner["positions"].indexOf(i) >= 0) {
+			strokeWeight(24);
+			stroke("#09a");
+
+			ellipse(posX, posY, markerSize/8, markerSize/8);
+		}
+
+		// Reset for regular markers
+		strokeWeight(6);
 		stroke("#0af");
 		ellipse(posX, posY, markerSize/8, markerSize/8);
 	}
@@ -110,12 +138,13 @@ function placeMarker(x, y) {
 
 	if (!isBoardPositionOccupied(i)) {
 		board[i] = currMarker; // Place marker in data
+		winner = determineWinner(); // Determine winner
 		playMarkerPlacementSound(currMarker, i); // Play music
 		startBGM(); // Start BGM if not started already
 		currMarkerThickness = maxMarkerThickness; // Reset marker thickness for animation
 		currMarker = currMarker == "x" ? "o" : "x"; // Switch marker
 		currNumMoves++; // Increment num moves
-		if (currNumMoves > maxNumMoves) {
+		if (currNumMoves > maxNumMoves || isGameOver()) {
 			stopBGM(); // Stop BGM if game is done
 		}
 	}
@@ -153,6 +182,67 @@ function isBoardPositionOccupied(i) {
 	return board[i] != " ";
 }
 
+// Determine winner of the game
+function determineWinner() {
+	// var isGameOver = false;
+	var winningPositions = [];
+	var winningMarker = " ";
+
+	// Set up position indices and steps
+	var horizontalPositions = [0, 3, 6];
+	var horizontalStep = 1;
+
+	var verticalPositions = [0, 1, 2];
+	var verticalStep = 3;
+
+	var diagonalTopLeftPositions = [0];
+	var diagonalTopLeftStep = 4;
+
+	var diagonalTopRightPositions = [2];
+	var diagonalTopRightStep = 2;
+
+	// Composite horizontal, vertical, diagonal
+	var dataToCheck = [
+		{"positions": horizontalPositions, "step": horizontalStep},
+		{"positions": verticalPositions, "step": verticalStep},
+		{"positions": diagonalTopLeftPositions, "step": diagonalTopLeftStep},
+		{"positions": diagonalTopRightPositions, "step": diagonalTopRightStep},
+	];
+
+	// Check all possible winning combos
+	for (var positionStepPairIndex=0; positionStepPairIndex < dataToCheck.length; positionStepPairIndex++) {
+		var positions = dataToCheck[positionStepPairIndex]["positions"];
+		var step = dataToCheck[positionStepPairIndex]["step"];
+
+		// Each starting position for h, v, d
+		for (var startingPositionIndex=0; startingPositionIndex < positions.length; startingPositionIndex++) {
+			var startingPosition = positions[startingPositionIndex];
+			if (board[startingPosition] == board[startingPosition + step] &&
+				board[startingPosition] == board[startingPosition + (step*2)] &&
+				board[startingPosition] != " ") {
+				winningPositions = [startingPosition,
+									startingPosition + step,
+									startingPosition + (step*2)];
+				winningMarker = board[startingPosition];
+				console.log("We have a winner!");
+			}
+		}
+	}
+
+	console.log("winningPositions:");
+	console.log(winningPositions);
+	console.log("winningMarker = " + winningMarker);
+
+	return {"positions": winningPositions, "marker": winningMarker};
+}
+
+// Checks if game is over
+function isGameOver() {
+	// console.log(winner);
+	return winner["marker"] != " ";
+}
+
+
 function playMarkerPlacementSound(marker, i) {
 	// Setup notes
 	var notes = availableNotes;
@@ -175,10 +265,20 @@ function playMarkerPlacementSound(marker, i) {
 
     // Play
 	if (currMarker == "x") {
-		synthX.triggerAttackRelease([note1, note2, note3, note4], "8n");
+		if (winner["marker"] == currMarker) {
+			synthX.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n");	
+		}
+		else {
+			synthX.triggerAttackRelease([note1, note2, note3, note4], "8n");
+		}
 	}
 	else if (currMarker == "o") {
-		synthO.triggerAttackRelease([note1, note2, note3, note4], "8n");
+		if (winner["marker"] == currMarker) {
+			synthO.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n");	
+		}
+		else {
+			synthO.triggerAttackRelease([note1, note2, note3, note4], "8n");
+		}
 	}
 }
 
