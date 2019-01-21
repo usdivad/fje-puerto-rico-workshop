@@ -132,6 +132,6 @@ function playMarkerPlacementSound(marker, i) {
 		synthX.triggerAttackRelease(["C4", "E4"], "8n");
 	}
 	else if (currMarker == "o") {
-		synthX.triggerAttackRelease(["E4", "G4"], "8n");
+		synthO.triggerAttackRelease(["E4", "G4"], "8n");
 	}
 }
