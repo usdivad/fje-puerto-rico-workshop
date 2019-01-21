@@ -72,7 +72,7 @@ function drawBoardCell(i, marker) {
 	if (marker == "x") {
 		// Winning markers
 		if (marker == winner["marker"] && winner["positions"].indexOf(i) >= 0) {
-			strokeWeight(36);
+			strokeWeight(24);
 			stroke("#0a9");
 
 			line(posX - markerSize/16, posY - markerSize/16, posX + markerSize/16, posY + markerSize/16);
@@ -90,7 +90,7 @@ function drawBoardCell(i, marker) {
 	else if (marker == "o") {
 		// Winning markers
 		if (marker == winner["marker"] && winner["positions"].indexOf(i) >= 0) {
-			strokeWeight(36);
+			strokeWeight(24);
 			stroke("#09a");
 
 			ellipse(posX, posY, markerSize/8, markerSize/8);
